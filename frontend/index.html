@@ -1,0 +1,1882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teatro Colón GS — Dashboard</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<style>
+/* =========================================================
+   CSS Custom Properties — Dark Theme
+   ========================================================= */
+:root {
+  --bg-primary: #0a0a0b;
+  --bg-secondary: #111113;
+  --bg-tertiary: #18181b;
+  --bg-elevated: #1f1f23;
+  --bg-hover: #27272a;
+  --bg-active: #2d2d32;
+  --border-color: #27272a;
+  --border-light: #1e1e21;
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #71717a;
+  --text-muted: #52525b;
+  --accent: #6366f1;
+  --accent-hover: #818cf8;
+  --accent-muted: rgba(99,102,241,0.15);
+  --green: #22c55e;
+  --green-bg: rgba(34,197,94,0.12);
+  --yellow: #eab308;
+  --yellow-bg: rgba(234,179,8,0.12);
+  --blue: #3b82f6;
+  --blue-bg: rgba(59,130,246,0.12);
+  --red: #ef4444;
+  --red-bg: rgba(239,68,68,0.12);
+  --orange: #f97316;
+  --orange-bg: rgba(249,115,22,0.12);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+  --transition: 200ms cubic-bezier(0.16,1,0.3,1);
+  --sidebar-width: 280px;
+  --header-height: 0px;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+/* =========================================================
+   Reset & Base
+   ========================================================= */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input, textarea { font-family: inherit; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--bg-active); }
+
+/* =========================================================
+   Layout
+   ========================================================= */
+.app-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* =========================================================
+   Sidebar
+   ========================================================= */
+.sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.sidebar-header {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-header h1 {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-header h1 .logo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: inline-block;
+}
+
+.sidebar-header .subtitle {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Stats bar in sidebar */
+.sidebar-stats {
+  display: flex;
+  gap: 2px;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+  padding: 6px 4px;
+  border-radius: var(--radius-sm);
+}
+
+.stat-item .stat-value {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.stat-item .stat-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+/* Video list */
+.video-list-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.video-list-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  padding: 8px 12px 4px;
+}
+
+.video-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+}
+
+.video-item:hover {
+  background: var(--bg-hover);
+}
+
+.video-item.active {
+  background: var(--bg-active);
+}
+
+.video-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: var(--accent);
+  border-radius: 0 3px 3px 0;
+}
+
+/* Status dot */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.status-dot.pending {
+  background: var(--yellow);
+  box-shadow: 0 0 6px var(--yellow-bg);
+}
+
+.status-dot.processing {
+  background: var(--blue);
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+.status-dot.done {
+  background: var(--green);
+}
+
+.status-dot.error {
+  background: var(--red);
+}
+
+.status-dot.cancelled {
+  background: var(--text-tertiary);
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 var(--blue-bg); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+
+.video-item .video-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.video-item .video-name {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.video-item .video-meta {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.video-item .status-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 100px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.status-badge.pending { background: var(--yellow-bg); color: var(--yellow); }
+.status-badge.processing { background: var(--blue-bg); color: var(--blue); }
+.status-badge.done { background: var(--green-bg); color: var(--green); }
+.status-badge.error { background: var(--red-bg); color: var(--red); }
+.status-badge.cancelled { background: var(--bg-hover); color: var(--text-tertiary); }
+
+/* =========================================================
+   Main Content Area
+   ========================================================= */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+/* Top toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+}
+
+.toolbar .breadcrumb {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.toolbar .breadcrumb span { color: var(--text-secondary); }
+
+.toolbar-spacer { flex: 1; }
+
+/* =========================================================
+   Buttons
+   ========================================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all var(--transition);
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+.btn-danger {
+  background: var(--red-bg);
+  color: var(--red);
+  border-color: transparent;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: rgba(239,68,68,0.2);
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 11px;
+  border-radius: var(--radius-sm);
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+}
+
+.btn-icon:hover {
+  background: var(--bg-hover);
+}
+
+/* =========================================================
+   Content Panels
+   ========================================================= */
+.content-panels {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  flex-shrink: 0;
+}
+
+.panel-header h3 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.panel-header .panel-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* =========================================================
+   Detail / Controls Panel (top)
+   ========================================================= */
+#detail-panel {
+  flex: 0 0 auto;
+  max-height: 40%;
+  min-height: 120px;
+}
+
+.detail-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.detail-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.detail-card.full {
+  grid-column: 1 / -1;
+}
+
+.detail-card h4 {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+
+.detail-value {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.detail-value.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* Progress bar */
+.progress-wrapper {
+  margin-top: 12px;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.progress-step {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.progress-pct {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-elevated);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+  border-radius: 100px;
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 0%;
+}
+
+.progress-bar-fill.done {
+  background: linear-gradient(90deg, var(--green), #4ade80);
+}
+
+.progress-bar-fill.error {
+  background: linear-gradient(90deg, var(--red), #f87171);
+}
+
+/* =========================================================
+   Log Viewer (middle)
+   ========================================================= */
+.log-viewer {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  background: #080808;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  min-height: 80px;
+}
+
+.log-viewer .log-line {
+  color: var(--text-tertiary);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.log-viewer .log-line:hover {
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.02);
+}
+
+.log-viewer .log-line .log-time {
+  color: var(--text-muted);
+  margin-right: 8px;
+  user-select: none;
+}
+
+.log-viewer .empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-family: var(--font-sans);
+}
+
+/* =========================================================
+   3D Viewer (bottom)
+   ========================================================= */
+#gs-viewer-panel {
+  flex: 1;
+  min-height: 200px;
+  position: relative;
+}
+
+#gs-viewer-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+#gs-viewer-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.viewer-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  z-index: 5;
+  transition: opacity 0.4s ease;
+}
+
+.viewer-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.viewer-overlay .overlay-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+
+.viewer-overlay h4 {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.viewer-overlay p {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.viewer-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.7);
+  z-index: 6;
+  transition: opacity 0.3s ease;
+}
+
+.viewer-loading.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--bg-elevated);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* =========================================================
+   Empty State
+   ========================================================= */
+.empty-state-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 48px;
+  text-align: center;
+}
+
+.empty-state-main .empty-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+  opacity: 0.3;
+}
+
+.empty-state-main h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.empty-state-main p {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  max-width: 360px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   Toast Messages
+   ========================================================= */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  padding: 10px 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-size: 13px;
+  color: var(--text-primary);
+  animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 380px;
+}
+
+.toast.toast-error {
+  border-color: var(--red);
+  background: var(--red-bg);
+}
+
+.toast.toast-success {
+  border-color: var(--green);
+  background: var(--green-bg);
+}
+
+@keyframes slideIn {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* =========================================================
+   Resizable splitter
+   ========================================================= */
+.splitter {
+  height: 3px;
+  background: var(--border-color);
+  cursor: row-resize;
+  flex-shrink: 0;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.splitter:hover,
+.splitter.active {
+  background: var(--accent);
+}
+
+.splitter::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 1px;
+  background: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.splitter:hover::after,
+.splitter.active::after {
+  opacity: 1;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+@media (max-width: 768px) {
+  .sidebar { width: 60px; min-width: 60px; }
+  .sidebar-header h1 span { display: none; }
+  .video-item .video-info { display: none; }
+  .video-item .status-badge { display: none; }
+  .video-list-title { display: none; }
+  .sidebar-stats { display: none; }
+  .detail-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .sidebar { display: none; }
+  .toolbar { padding: 10px 12px; flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+  <!-- ============================================ -->
+  <!-- SIDEBAR -->
+  <!-- ============================================ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h1>
+        <span class="logo-dot"></span>
+        <span>Teatro Colón GS</span>
+      </h1>
+      <div class="subtitle">Gaussian Splat Pipeline</div>
+    </div>
+
+    <div class="sidebar-stats" id="sidebar-stats">
+      <div class="stat-item">
+        <div class="stat-value" id="stat-total">0</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-done" style="color:var(--green)">0</div>
+        <div class="stat-label">Done</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-processing" style="color:var(--blue)">0</div>
+        <div class="stat-label">Active</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-pending" style="color:var(--yellow)">0</div>
+        <div class="stat-label">Pending</div>
+      </div>
+    </div>
+
+    <div class="video-list-wrapper">
+      <div class="video-list-title">Videos</div>
+      <div id="video-list" class="video-list"></div>
+    </div>
+  </aside>
+
+  <!-- ============================================ -->
+  <!-- MAIN CONTENT -->
+  <!-- ============================================ -->
+  <main class="main-content">
+    <!-- Toolbar -->
+    <div class="toolbar" id="toolbar">
+      <div class="breadcrumb">
+        <span id="breadcrumb-video">Select a video</span>
+      </div>
+      <div class="toolbar-spacer"></div>
+      <button class="btn btn-secondary btn-sm" id="btn-refresh" title="Refresh">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+      </button>
+    </div>
+
+    <div class="content-panels" id="content-panels">
+      <!-- Empty State (shown initially) -->
+      <div class="empty-state-main" id="empty-state">
+        <div class="empty-icon">🏛️</div>
+        <h2>Teatro Colón GS</h2>
+        <p>Select a video from the sidebar to view its details, start the pipeline, and explore the 3D Gaussian Splat reconstruction.</p>
+      </div>
+
+      <!-- Detail Panel (top) -->
+      <div class="panel" id="detail-panel" style="display:none;">
+        <div class="panel-header">
+          <h3>Pipeline Controls</h3>
+          <div class="panel-actions">
+            <button class="btn btn-primary btn-sm" id="btn-start-pipeline">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              Start Pipeline
+            </button>
+            <button class="btn btn-danger btn-sm" id="btn-cancel-pipeline" style="display:none;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
+              Cancel
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btn-download-ply" style="display:none;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download PLY
+            </button>
+          </div>
+        </div>
+        <div class="detail-content">
+          <div class="detail-grid">
+            <div class="detail-card">
+              <h4>Video</h4>
+              <div class="detail-value" id="detail-name">—</div>
+            </div>
+            <div class="detail-card">
+              <h4>Status</h4>
+              <div class="detail-value">
+                <span class="status-badge pending" id="detail-status-badge">pending</span>
+              </div>
+            </div>
+            <div class="detail-card full" id="progress-card" style="display:none;">
+              <h4>Progress</h4>
+              <div class="progress-wrapper">
+                <div class="progress-header">
+                  <span class="progress-step" id="progress-step">Initializing...</span>
+                  <span class="progress-pct" id="progress-pct">0%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" id="progress-fill"></div>
+                </div>
+              </div>
+            </div>
+            <div class="detail-card full" id="error-card" style="display:none;">
+              <h4 style="color:var(--red);">Error</h4>
+              <div class="detail-value mono" id="error-message" style="color:var(--red);"></div>
+            </div>
+            <div class="detail-card" id="gs-info-card" style="display:none;">
+              <h4>GS Output</h4>
+              <div class="detail-value">
+                <span id="gs-file-size">—</span>
+              </div>
+            </div>
+            <div class="detail-card" id="video-info-card">
+              <h4>File Info</h4>
+              <div class="detail-value mono" id="video-file-info">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Splitter -->
+      <div class="splitter" id="splitter-1"></div>
+
+      <!-- Log Viewer (middle) -->
+      <div class="panel" id="log-panel" style="display:none; flex: 0 0 180px;">
+        <div class="panel-header">
+          <h3>Pipeline Log</h3>
+          <div class="panel-actions">
+            <button class="btn btn-secondary btn-sm btn-icon" id="btn-clear-log" title="Clear log">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="log-viewer" id="log-viewer">
+          <div class="empty-state">Select a video and start the pipeline to see logs</div>
+        </div>
+      </div>
+
+      <!-- Splitter -->
+      <div class="splitter" id="splitter-2"></div>
+
+      <!-- 3D Viewer (bottom) -->
+      <div class="panel" id="gs-viewer-panel" style="display:none;">
+        <div class="panel-header">
+          <h3>3D Gaussian Splat Viewer</h3>
+          <div class="panel-actions">
+            <span style="font-size:11px;color:var(--text-tertiary);">🖱 Orbit to navigate</span>
+          </div>
+        </div>
+        <div id="gs-viewer-container">
+          <div class="viewer-overlay" id="viewer-overlay">
+            <div class="overlay-icon">🌐</div>
+            <h4>No Scene Loaded</h4>
+            <p>Run a pipeline to generate and view a 3D Gaussian Splat</p>
+          </div>
+          <div class="viewer-loading hidden" id="viewer-loading">
+            <div class="spinner"></div>
+            <span style="font-size:13px;color:var(--text-secondary);">Loading 3D scene...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ========================================================= -->
+<!-- Three.js from CDN (ES Module) -->
+<!-- ========================================================= -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+// =============================================================
+// IMPORTS
+// =============================================================
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
+
+// =============================================================
+// STATE
+// =============================================================
+const state = {
+  selectedVideo: null,
+  currentTaskId: null,
+  isProcessing: false,
+  pollingInterval: null,
+  logPollingInterval: null,
+  ws: null,
+  wsConnected: false,
+  videoData: [],
+  viewer: null,
+  scene: null,
+  camera: null,
+  controls: null,
+  renderer: null,
+  resizeObserver: null,
+  plyLoaded: false,
+  splitterDrag: null,
+};
+
+// =============================================================
+// DOM REFS
+// =============================================================
+const $ = (id) => document.getElementById(id);
+const videoList = $('video-list');
+const emptyState = $('empty-state');
+const detailPanel = $('detail-panel');
+const logPanel = $('log-panel');
+const gsViewerPanel = $('gs-viewer-panel');
+const breadcrumbVideo = $('breadcrumb-video');
+const detailName = $('detail-name');
+const detailStatusBadge = $('detail-status-badge');
+const progressCard = $('progress-card');
+const progressStep = $('progress-step');
+const progressPct = $('progress-pct');
+const progressFill = $('progress-fill');
+const errorCard = $('error-card');
+const errorMessage = $('error-message');
+const gsInfoCard = $('gs-info-card');
+const gsFileSize = $('gs-file-size');
+const videoFileInfo = $('video-file-info');
+const logViewer = $('log-viewer');
+const viewerOverlay = $('viewer-overlay');
+const viewerLoading = $('viewer-loading');
+const gsViewerContainer = $('gs-viewer-container');
+const btnStart = $('btn-start-pipeline');
+const btnCancel = $('btn-cancel-pipeline');
+const btnDownload = $('btn-download-ply');
+const btnRefresh = $('btn-refresh');
+const btnClearLog = $('btn-clear-log');
+const toastContainer = $('toast-container');
+
+// Stats
+const statTotal = $('stat-total');
+const statDone = $('stat-done');
+const statProcessing = $('stat-processing');
+const statPending = $('stat-pending');
+
+// =============================================================
+// API HELPERS
+// =============================================================
+const API_BASE = ''; // same origin
+
+async function apiGet(path) {
+  const res = await fetch(`${API_BASE}${path}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+async function apiPost(path, body) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+async function apiDelete(path) {
+  const res = await fetch(`${API_BASE}${path}`, { method: 'DELETE' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+// =============================================================
+// TOAST NOTIFICATIONS
+// =============================================================
+function showToast(message, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = message;
+  toastContainer.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity 0.3s';
+    setTimeout(() => el.remove(), 300);
+  }, 4000);
+}
+
+// =============================================================
+// WEBSOCKET
+// =============================================================
+function connectWebSocket() {
+  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = `${protocol}//${location.host}/ws/status`;
+
+  try {
+    state.ws = new WebSocket(wsUrl);
+
+    state.ws.onopen = () => {
+      state.wsConnected = true;
+      console.log('WebSocket connected');
+    };
+
+    state.ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'status_update') {
+          handleStatusUpdate(data);
+        }
+      } catch (e) {
+        console.warn('WS parse error:', e);
+      }
+    };
+
+    state.ws.onclose = () => {
+      state.wsConnected = false;
+      // Reconnect after 5s
+      setTimeout(connectWebSocket, 5000);
+    };
+
+    state.ws.onerror = () => {
+      // Will trigger onclose
+    };
+  } catch (e) {
+    console.warn('WebSocket connection failed, falling back to polling');
+  }
+}
+
+function handleStatusUpdate(data) {
+  const { video_name, status, progress, step } = data;
+  if (video_name === state.selectedVideo) {
+    updateDetailStatus(status, progress, step);
+  }
+  // Refresh video list to update status dots
+  fetchVideoList();
+}
+
+// =============================================================
+// FETCH VIDEOS
+// =============================================================
+async function fetchVideoList() {
+  try {
+    const data = await apiGet('/api/videos');
+    state.videoData = data.videos;
+    renderVideoList(data.videos);
+    updateStats(data.videos);
+  } catch (err) {
+    console.error('Failed to fetch videos:', err);
+    videoList.innerHTML = `<div style="padding:16px;color:var(--text-tertiary);font-size:13px;">Failed to load videos. Is the server running?</div>`;
+  }
+}
+
+function renderVideoList(videos) {
+  if (videos.length === 0) {
+    videoList.innerHTML = `
+      <div style="padding:16px;color:var(--text-muted);font-size:12px;text-align:center;">
+        No videos found.<br>
+        Add .mov/.mp4 files to the videos/ directory.
+      </div>`;
+    return;
+  }
+
+  videoList.innerHTML = videos.map(v => {
+    const status = v.status || 'pending';
+    const isActive = state.selectedVideo === v.name;
+    const sizeStr = formatBytes(v.size);
+    return `
+      <div class="video-item ${isActive ? 'active' : ''}" data-video="${v.name}">
+        <span class="status-dot ${status}"></span>
+        <div class="video-info">
+          <div class="video-name">${escapeHtml(v.name)}</div>
+          <div class="video-meta">${sizeStr}</div>
+        </div>
+        <span class="status-badge ${status}">${status}</span>
+      </div>
+    `;
+  }).join('');
+
+  // Attach click handlers
+  document.querySelectorAll('.video-item').forEach(el => {
+    el.addEventListener('click', () => {
+      selectVideo(el.dataset.video);
+    });
+  });
+}
+
+function updateStats(videos) {
+  const total = videos.length;
+  const done = videos.filter(v => v.status === 'done').length;
+  const processing = videos.filter(v => v.status === 'processing').length;
+  const pending = videos.filter(v => v.status === 'pending' || v.status === 'queued').length;
+
+  statTotal.textContent = total;
+  statDone.textContent = done;
+  statProcessing.textContent = processing;
+  statPending.textContent = pending;
+}
+
+// =============================================================
+// SELECT VIDEO
+// =============================================================
+function selectVideo(name) {
+  state.selectedVideo = name;
+  breadcrumbVideo.textContent = name;
+
+  // Update active state in list
+  document.querySelectorAll('.video-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.video === name);
+  });
+
+  // Show panels, hide empty state
+  emptyState.style.display = 'none';
+  detailPanel.style.display = 'flex';
+  logPanel.style.display = 'flex';
+  gsViewerPanel.style.display = 'flex';
+
+  // Show cancel button if processing, hide download
+  btnCancel.style.display = 'none';
+  btnDownload.style.display = 'none';
+
+  // Update details
+  loadVideoDetails(name);
+  loadLogs(name);
+
+  // Reset 3D viewer
+  resetViewer();
+}
+
+async function loadVideoDetails(name) {
+  try {
+    const data = await apiGet('/api/videos');
+    const video = data.videos.find(v => v.name === name);
+    if (!video) {
+      detailName.textContent = name;
+      return;
+    }
+
+    detailName.textContent = video.name;
+
+    const status = video.status || 'pending';
+    updateDetailStatus(status, video.progress || 0, video.step || '');
+
+    // Video file info
+    videoFileInfo.textContent = `${formatBytes(video.size)} | ${video.filename || name}`;
+
+    // GS info
+    if (video.ply_exists && video.status === 'done') {
+      gsInfoCard.style.display = 'block';
+      gsFileSize.textContent = formatBytes(video.ply_size);
+      btnDownload.style.display = 'inline-flex';
+    } else {
+      gsInfoCard.style.display = 'none';
+      btnDownload.style.display = 'none';
+    }
+
+    // Update button state
+    if (status === 'processing') {
+      btnStart.disabled = true;
+      btnStart.textContent = 'Processing...';
+      btnCancel.style.display = 'inline-flex';
+    } else if (status === 'done') {
+      btnStart.disabled = false;
+      btnStart.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+        Re-run Pipeline
+      `;
+      btnCancel.style.display = 'none';
+      // Load the GS
+      loadGS(name);
+    } else if (status === 'error') {
+      btnStart.disabled = false;
+      btnStart.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+        Retry Pipeline
+      `;
+      btnCancel.style.display = 'none';
+    } else {
+      btnStart.disabled = false;
+      btnStart.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+        Start Pipeline
+      `;
+      btnCancel.style.display = 'none';
+    }
+
+    // Load preview thumbnail
+    loadThumbnail(name);
+
+  } catch (err) {
+    console.error('Failed to load video details:', err);
+  }
+}
+
+function updateDetailStatus(status, progress, step) {
+  // Status badge
+  const badge = detailStatusBadge;
+  badge.className = `status-badge ${status}`;
+  badge.textContent = status;
+
+  // Progress
+  if (status === 'processing' || status === 'queued') {
+    progressCard.style.display = 'block';
+    errorCard.style.display = 'none';
+
+    const pct = Math.min(Math.max(progress || 0), 100);
+    progressStep.textContent = step || 'Initializing...';
+    progressPct.textContent = `${pct}%`;
+    progressFill.style.width = `${pct}%`;
+    progressFill.className = 'progress-bar-fill';
+  } else if (status === 'done') {
+    progressCard.style.display = 'block';
+    errorCard.style.display = 'none';
+    progressStep.textContent = 'Complete';
+    progressPct.textContent = '100%';
+    progressFill.style.width = '100%';
+    progressFill.className = 'progress-bar-fill done';
+  } else if (status === 'error') {
+    progressCard.style.display = 'block';
+    errorCard.style.display = 'block';
+    progressStep.textContent = 'Failed';
+    progressPct.textContent = '0%';
+    progressFill.style.width = '0%';
+    progressFill.className = 'progress-bar-fill error';
+    errorMessage.textContent = step || 'Unknown error';
+  } else {
+    progressCard.style.display = 'none';
+    errorCard.style.display = 'none';
+  }
+}
+
+async function loadThumbnail(name) {
+  // Try to load thumbnail via preview endpoint
+  // Not critical if fails
+}
+
+// =============================================================
+// LOG VIEWER
+// =============================================================
+async function loadLogs(name) {
+  if (!name) return;
+  try {
+    const data = await apiGet(`/api/logs/${encodeURIComponent(name)}`);
+    const logContent = data.log || '';
+    renderLog(logContent);
+  } catch (err) {
+    // Log might not exist yet
+    renderLog('');
+  }
+}
+
+function renderLog(content) {
+  if (!content || content.trim() === '') {
+    logViewer.innerHTML = `<div class="empty-state">No log output yet. Start the pipeline to see logs.</div>`;
+    return;
+  }
+
+  const lines = content.split('\n').filter(l => l.trim());
+  logViewer.innerHTML = lines.map(line => {
+    const timeMatch = line.match(/^\[([^\]]+)\]/);
+    let timeStr = '';
+    let rest = line;
+    if (timeMatch) {
+      timeStr = timeMatch[1];
+      rest = line.slice(timeMatch[0].length);
+    }
+    return `<div class="log-line"><span class="log-time">${timeStr ? '[' + timeStr + ']' : ''}</span>${escapeHtml(rest)}</div>`;
+  }).join('');
+
+  // Auto-scroll to bottom
+  logViewer.scrollTop = logViewer.scrollHeight;
+}
+
+function startLogPolling(name) {
+  stopLogPolling();
+  state.logPollingInterval = setInterval(() => loadLogs(name), 2000);
+}
+
+function stopLogPolling() {
+  if (state.logPollingInterval) {
+    clearInterval(state.logPollingInterval);
+    state.logPollingInterval = null;
+  }
+}
+
+// =============================================================
+// 3D VIEWER (Three.js)
+// =============================================================
+function initViewer() {
+  if (state.renderer) return;
+
+  const container = gsViewerContainer;
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+
+  // Scene
+  state.scene = new THREE.Scene();
+  state.scene.background = new THREE.Color(0x0a0a0b);
+
+  // Camera
+  state.camera = new THREE.PerspectiveCamera(45, width / height, 0.01, 1000);
+  state.camera.position.set(3, 2, 5);
+
+  // Renderer
+  state.renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    alpha: false,
+  });
+  state.renderer.setSize(width, height);
+  state.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  state.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  state.renderer.toneMappingExposure = 1.0;
+  container.appendChild(state.renderer.domElement);
+
+  // Controls
+  state.controls = new OrbitControls(state.camera, state.renderer.domElement);
+  state.controls.enableDamping = true;
+  state.controls.dampingFactor = 0.08;
+  state.controls.minDistance = 0.1;
+  state.controls.maxDistance = 100;
+  state.controls.target.set(0, 0, 0);
+  state.controls.update();
+
+  // Lights
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+  state.scene.add(ambientLight);
+
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dirLight.position.set(5, 10, 5);
+  state.scene.add(dirLight);
+
+  const dirLight2 = new THREE.DirectionalLight(0x8888ff, 0.3);
+  dirLight2.position.set(-5, -5, -5);
+  state.scene.add(dirLight2);
+
+  // Grid helper (subtle)
+  const gridHelper = new THREE.Group();
+
+  // Grid
+  const gridGeo = new THREE.PlaneGeometry(10, 10, 10, 10);
+  const gridMat = new THREE.LineBasicMaterial({ color: 0x27272a, transparent: true, opacity: 0.3 });
+  const grid = new THREE.LineSegments(
+    new THREE.WireframeGeometry(gridGeo),
+    gridMat
+  );
+  grid.rotation.x = -Math.PI / 2;
+  grid.position.y = -0.5;
+  state.scene.add(grid);
+
+  // Animation loop
+  function animate() {
+    requestAnimationFrame(animate);
+    state.controls.update();
+    state.renderer.render(state.scene, state.camera);
+  }
+  animate();
+
+  // Resize handler
+  state.resizeObserver = new ResizeObserver(() => {
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    if (w > 0 && h > 0) {
+      state.camera.aspect = w / h;
+      state.camera.updateProjectionMatrix();
+      state.renderer.setSize(w, h);
+    }
+  });
+  state.resizeObserver.observe(container);
+}
+
+function resetViewer() {
+  if (!state.scene) {
+    initViewer();
+  }
+
+  // Remove loaded PLY objects
+  if (state.scene) {
+    const toRemove = [];
+    state.scene.traverse((child) => {
+      if (child.userData && child.userData.isPLY) {
+        toRemove.push(child);
+      }
+    });
+    toRemove.forEach(child => {
+      state.scene.remove(child);
+      if (child.geometry) child.geometry.dispose();
+      if (child.material) child.material.dispose();
+    });
+  }
+
+  state.plyLoaded = false;
+  viewerOverlay.classList.remove('hidden');
+  viewerLoading.classList.add('hidden');
+}
+
+async function loadGS(name) {
+  initViewer();
+
+  // Hide overlay, show loading
+  viewerOverlay.classList.add('hidden');
+  viewerLoading.classList.remove('hidden');
+
+  try {
+    // Try to load the PLY file
+    const plyUrl = `/api/gs/${encodeURIComponent(name)}`;
+    const loader = new PLYLoader();
+
+    const geometry = await new Promise((resolve, reject) => {
+      loader.load(plyUrl, resolve, undefined, reject);
+    });
+
+    // Create colored point cloud
+    const hasColors = geometry.attributes.color !== undefined;
+    const material = new THREE.PointsMaterial({
+      size: 0.02,
+      vertexColors: hasColors,
+      sizeAttenuation: true,
+      opacity: 0.9,
+      transparent: true,
+    });
+
+    const points = new THREE.Points(geometry, material);
+    points.userData.isPLY = true;
+
+    // Center the geometry
+    geometry.computeBoundingBox();
+    const center = new THREE.Vector3();
+    if (geometry.boundingBox) {
+      geometry.boundingBox.getCenter(center);
+      geometry.translate(-center.x, -center.y, -center.z);
+    }
+
+    state.scene.add(points);
+    state.plyLoaded = true;
+
+    // Fit camera
+    if (geometry.boundingBox) {
+      const size = geometry.boundingBox.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const dist = maxDim * 2.5;
+      state.camera.position.set(dist * 0.6, dist * 0.4, dist);
+      state.controls.target.set(0, 0, 0);
+      state.controls.update();
+    }
+
+    viewerLoading.classList.add('hidden');
+    showToast(`3D scene loaded for "${name}"`, 'success');
+
+  } catch (err) {
+    console.warn('Failed to load PLY, showing placeholder:', err);
+    viewerLoading.classList.add('hidden');
+
+    // Show a placeholder scene
+    createPlaceholderScene();
+  }
+}
+
+function createPlaceholderScene() {
+  // Remove old placeholders
+  const toRemove = [];
+  state.scene.traverse((child) => {
+    if (child.userData && child.userData.isPlaceholder) {
+      toRemove.push(child);
+    }
+  });
+  toRemove.forEach(child => state.scene.remove(child));
+
+  // Show a text sprite or simple geometry indicating it's ready
+  const group = new THREE.Group();
+  group.userData.isPlaceholder = true;
+
+  // Create a decorative ring of points
+  const numPoints = 200;
+  const positions = new Float32Array(numPoints * 3);
+  const colors = new Float32Array(numPoints * 3);
+  const radius = 1.5;
+
+  for (let i = 0; i < numPoints; i++) {
+    const theta = (i / numPoints) * Math.PI * 2;
+    const phi = Math.acos(2 * (i / numPoints) - 1);
+    const r = radius * (0.8 + 0.2 * Math.sin(i * 0.5));
+
+    positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+    positions[i * 3 + 1] = r * Math.cos(phi);
+    positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+
+    colors[i * 3] = 0.4 + 0.6 * (i / numPoints);
+    colors[i * 3 + 1] = 0.3 + 0.5 * Math.sin(i * 0.3);
+    colors[i * 3 + 2] = 0.8 + 0.2 * Math.cos(i * 0.7);
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+  const mat = new THREE.PointsMaterial({
+    size: 0.04,
+    vertexColors: true,
+    sizeAttenuation: true,
+    transparent: true,
+    opacity: 0.7,
+  });
+
+  const points = new THREE.Points(geo, mat);
+  group.add(points);
+
+  // Add a subtle glow sphere
+  const sphereGeo = new THREE.SphereGeometry(0.3, 32, 32);
+  const sphereMat = new THREE.MeshBasicMaterial({
+    color: 0x6366f1,
+    transparent: true,
+    opacity: 0.2,
+  });
+  const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+  group.add(sphere);
+
+  // Add axes helper
+  const axesHelper = new THREE.AxesHelper(2);
+  axesHelper.material.transparent = true;
+  axesHelper.material.opacity = 0.3;
+  group.add(axesHelper);
+
+  state.scene.add(group);
+
+  // Animate rotation
+  if (!state._placeholderAnimId) {
+    const animate = () => {
+      state._placeholderAnimId = requestAnimationFrame(animate);
+      if (group && !state.plyLoaded) {
+        group.rotation.y += 0.005;
+        group.rotation.x += 0.002;
+      }
+    };
+    animate();
+  }
+}
+
+// =============================================================
+// PIPELINE ACTIONS
+// =============================================================
+async function startPipeline() {
+  if (!state.selectedVideo || state.isProcessing) return;
+
+  state.isProcessing = true;
+  btnStart.disabled = true;
+  btnStart.textContent = 'Starting...';
+
+  try {
+    const result = await apiPost('/api/pipeline/start', {
+      video_name: state.selectedVideo,
+    });
+
+    state.currentTaskId = result.task_id;
+    showToast(`Pipeline started for "${state.selectedVideo}"`, 'success');
+
+    // Update UI for processing state
+    btnStart.disabled = true;
+    btnStart.textContent = 'Processing...';
+    btnCancel.style.display = 'inline-flex';
+    btnDownload.style.display = 'none';
+
+    // Show progress card
+    progressCard.style.display = 'block';
+    errorCard.style.display = 'none';
+    progressStep.textContent = 'Starting...';
+    progressPct.textContent = '0%';
+    progressFill.style.width = '0%';
+
+    // Start polling logs
+    startLogPolling(state.selectedVideo);
+
+    // Start polling status
+    startStatusPolling(result.task_id);
+
+  } catch (err) {
+    showToast(`Failed to start pipeline: ${err.message}`, 'error');
+    btnStart.disabled = false;
+    btnStart.innerHTML = `
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+      Retry Pipeline
+    `;
+    state.isProcessing = false;
+  }
+}
+
+function startStatusPolling(taskId) {
+  stopStatusPolling();
+  state.pollingInterval = setInterval(async () => {
+    try {
+      const status = await apiGet(`/api/pipeline/status/${taskId}`);
+      const st = status.status || 'unknown';
+
+      updateDetailStatus(st, status.progress || 0, status.step || '');
+
+      if (st === 'done') {
+        stopStatusPolling();
+        stopLogPolling();
+        state.isProcessing = false;
+        btnStart.disabled = false;
+        btnStart.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+          Re-run Pipeline
+        `;
+        btnCancel.style.display = 'none';
+        btnDownload.style.display = 'inline-flex';
+        showToast(`Pipeline completed for "${state.selectedVideo}"`, 'success');
+        loadGS(state.selectedVideo);
+        fetchVideoList();
+      } else if (st === 'error') {
+        stopStatusPolling();
+        stopLogPolling();
+        state.isProcessing = false;
+        btnStart.disabled = false;
+        btnStart.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+          Retry Pipeline
+        `;
+        btnCancel.style.display = 'none';
+        showToast(`Pipeline failed for "${state.selectedVideo}"`, 'error');
+        fetchVideoList();
+      } else if (st === 'cancelled') {
+        stopStatusPolling();
+        stopLogPolling();
+        state.isProcessing = false;
+        btnStart.disabled = false;
+        btnStart.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+        Start Pipeline`;
+        btnCancel.style.display = 'none';
+        fetchVideoList();
+      }
+    } catch (err) {
+      // Task might not exist yet
+    }
+  }, 1500);
+}
+
+function stopStatusPolling() {
+  if (state.pollingInterval) {
+    clearInterval(state.pollingInterval);
+    state.pollingInterval = null;
+  }
+}
+
+async function cancelPipeline() {
+  if (!state.currentTaskId) return;
+
+  try {
+    await apiDelete(`/api/pipeline/cancel/${state.currentTaskId}`);
+    showToast('Pipeline cancelled', 'info');
+  } catch (err) {
+    showToast(`Failed to cancel: ${err.message}`, 'error');
+  }
+}
+
+// =============================================================
+// DOWNLOAD
+// =============================================================
+function downloadPLY() {
+  if (!state.selectedVideo) return;
+  const url = `${API_BASE}/api/gs/${encodeURIComponent(state.selectedVideo)}`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${state.selectedVideo}.ply`;
+  a.click();
+}
+
+// =============================================================
+// SPLITTER (Resizable panels)
+// =============================================================
+function initSplitter(splitterId, panelAbove, panelBelow) {
+  const splitter = document.getElementById(splitterId);
+  let isDragging = false;
+  let startY, startHeightAbove, startHeightBelow;
+
+  splitter.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    startY = e.clientY;
+    startHeightAbove = panelAbove.offsetHeight;
+    startHeightBelow = panelBelow.offsetHeight;
+    splitter.classList.add('active');
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const diff = e.clientY - startY;
+
+    // Panel above minimum 80px, panel below minimum 80px
+    const newAbove = Math.max(80, Math.min(startHeightAbove + diff, window.innerHeight - 160));
+    panelAbove.style.flex = '0 0 ' + newAbove + 'px';
+    panelBelow.style.flex = '1 1 auto';
+
+    // Trigger Three.js resize
+    if (state.renderer) {
+      const w = gsViewerContainer.clientWidth;
+      const h = gsViewerContainer.clientHeight;
+      if (w > 0 && h > 0) {
+        state.camera.aspect = w / h;
+        state.camera.updateProjectionMatrix();
+        state.renderer.setSize(w, h);
+      }
+    }
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      splitter.classList.remove('active');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+  });
+}
+
+// =============================================================
+// UTILITY
+// =============================================================
+function formatBytes(bytes) {
+  if (!bytes || bytes === 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let i = 0;
+  let size = bytes;
+  while (size >= 1024 && i < units.length - 1) {
+    size /= 1024;
+    i++;
+  }
+  return `${size.toFixed(1)} ${units[i]}`;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// =============================================================
+// EVENTS
+// =============================================================
+btnStart.addEventListener('click', startPipeline);
+btnCancel.addEventListener('click', cancelPipeline);
+btnDownload.addEventListener('click', downloadPLY);
+btnRefresh.addEventListener('click', () => {
+  fetchVideoList();
+  if (state.selectedVideo) loadVideoDetails(state.selectedVideo);
+});
+btnClearLog.addEventListener('click', () => {
+  logViewer.innerHTML = `<div class="empty-state">Log cleared</div>`;
+});
+
+// =============================================================
+// INIT
+// =============================================================
+async function init() {
+  // Connect WebSocket
+  connectWebSocket();
+
+  // Load video list
+  await fetchVideoList();
+
+  // Auto-select first video if exists
+  if (state.videoData.length > 0 && !state.selectedVideo) {
+    selectVideo(state.videoData[0].name);
+  }
+
+  // Init viewer (just creates the scene, doesn't load anything)
+  initViewer();
+
+  // Init splitters
+  initSplitter('splitter-1', detailPanel, logPanel);
+  initSplitter('splitter-2', logPanel, gsViewerPanel);
+
+  // Periodic refresh of video list (every 10s)
+  setInterval(fetchVideoList, 10000);
+
+  console.log('Teatro Colón GS Dashboard initialized');
+}
+
+// Start when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+# Teatro Colón - Gaussian Splat Pipeline Config
+project_root: C:\Users\Tolch\Documents\AI_Code\Teatro_Colon-GS
+colmap_exe: C:\Users\Tolch\Documents\AI_Code\Teatro_Colon-GS\colmap-bin\bin\colmap.exe
+
+# Frame extraction
+extract_every_n: 15  # extract every Nth frame (lower = more frames = better quality but slower)
+max_frames: 200       # max frames per video (to cap VRAM usage)
+frame_width: 1008     # resize to this width (half original 2016)
+frame_quality: 85     # JPEG quality
+
+# COLMAP settings
+colmap:
+  vocab_tree: ~  # optional path to vocab tree for faster matching
+  matcher: exhaustive  # exhaustive or sequential or vocab_tree
+  sift_gpu_index: 0
+
+# GS training (gsplat)
+training:
+  num_iterations: 7000
+  batch_size: 1
+  lr: 0.00016
+  max_gs_count: 500000
+  antialiased: true
+  use_amp: false  # mixed precision

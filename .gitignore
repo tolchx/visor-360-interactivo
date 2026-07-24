@@ -1,0 +1,9 @@
+__pycache__/
+venv/
+colmap-bin/
+colmap-windows.zip
+*.pyc
+.DS_Store
+Thumbs.db
+logs/
+results/
